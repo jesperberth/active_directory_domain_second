@@ -1,0 +1,26 @@
+---
+- name: Install AD-Tools and DNS
+  win_feature:
+    name:
+    - DNS
+    - AD-Domain-Services
+    state: present
+    include_management_tools: yes
+  register: feature_install
+
+- name: Reboot if required
+  win_reboot:
+  when: feature_install.reboot_required
+
+- name: Active Directory Secondary Domain Controller
+  win_domain_controller:
+    dns_domain_name: "{{ domain }}"
+    domain_admin_user: "{{ azurevmuser }}@{{ domain }}"
+    domain_admin_password: "{{ azurevmpw }}"
+    safe_mode_password: "{{ azurevmpw }}"
+    state: domain_controller
+  register: domain_install
+
+- name: Reboot if required
+  win_reboot:
+  when: domain_install.reboot_required
